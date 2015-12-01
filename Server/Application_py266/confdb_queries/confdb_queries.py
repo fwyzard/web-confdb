@@ -27,7 +27,6 @@ class ConfDbQueries(object):
 
         elements = []
         if (id_pathid == -2 or id_version == -2 or db == None):
-#            print ("PARAMETERS EXCEPTION HERE")
             log.error('ERROR: getCompletePathSequences - input parameters error')
 
         elements = db.query(Pathelement).from_statement(text("SELECT "
@@ -55,7 +54,6 @@ class ConfDbQueries(object):
 
         items = []
         if (id_pathid == -2 or id_version == -2 or db == None):
-#            print ("PARAMETERS EXCEPTION HERE")
             log.error('ERROR: getCompletePathSequencesItems - input parameters error')
 
         items = db.query(Pathitems).from_statement(text("SELECT "
@@ -86,7 +84,6 @@ class ConfDbQueries(object):
     def getOumStreamid(self,id_pathid=-2, db=None, log = None):
 
         if (id_pathid == -2 or db == None):
-#            print ("PARAMETERS EXCEPTION HERE")
             log.error('ERROR: getOumStreamid - input parameters error')
 
         oum = db.query(PathidToOutM).from_statement(text("SELECT DISTINCT "
@@ -108,7 +105,6 @@ class ConfDbQueries(object):
     def getStreamid(self,id_streamid=-2, db=None, log = None):
 
         if (id_streamid == -2 or db == None):
-#            print ("PARAMETERS EXCEPTION HERE")
             log.error('ERROR: getStreamid - input parameters error')
 
         stid = db.query(StreamId).from_statement(text("SELECT DISTINCT "
@@ -129,7 +125,6 @@ class ConfDbQueries(object):
 
         items = []
         if (id_pathid == -2 or id_version == -2 or db == None):
-#            print ("PARAMETERS EXCEPTION HERE")
             log.error('ERROR: getLevelZeroPathItems - input parameters error')
 
         items = db.query(Pathitems).from_statement(text("SELECT "
@@ -151,7 +146,6 @@ class ConfDbQueries(object):
         return items
 
 
-
     #Returns the level zero Paelements records (Modules) in a given path
     #@params:
     #         id_version: id of Confversion table in the confDB
@@ -162,7 +156,6 @@ class ConfDbQueries(object):
 
         elements = []
         if (id_pathid == -2 or id_version == -2 or db == None):
-#            print ("PARAMETERS EXCEPTION HERE")
             log.error('ERROR: getLevelZeroPaelements - input parameters error')
 
         elements = db.query(Pathelement).from_statement(text("SELECT "
@@ -188,7 +181,6 @@ class ConfDbQueries(object):
     def getVersion(self,id_ver=-2, db=None, log = None):
 
         if (id_ver == -2 or db == None):
-#            print ("PARAMETERS EXCEPTION HERE")
             log.error('ERROR: getVersion - input parameters error')
 
         version = db.query(Version).get(id_ver)
@@ -204,7 +196,6 @@ class ConfDbQueries(object):
 
         pats = []
         if (id_version == -2 or db == None):
-#            print ("PARAMETERS EXCEPTION HERE")
             log.error('ERROR: getPaths - input parameters error')
 
         pats = db.query(Pathids).from_statement(text("SELECT u_pathids.id, u_pathids.id_path, u_pathids.isendpath "
@@ -223,7 +214,6 @@ class ConfDbQueries(object):
 
         pats = []
         if (id_version == -2 or db == None):
-#            print ("PARAMETERS EXCEPTION HERE")
             log.error('ERROR: getEndPaths - input parameters error')
 
         pats = db.query(Pathids).from_statement(text("SELECT u_pathids.id, u_pathids.id_path, u_pathids.isendpath "
@@ -237,7 +227,6 @@ class ConfDbQueries(object):
     def getPathName(self,id_pathid=-2, id_ver=-2,db=None, log = None):
 
         if (id_pathid == -2 or db == None or id_ver==-2):
-#            print ("PARAMETERS EXCEPTION HERE")
             log.error('ERROR: getPathName - input parameters error')
 
         patname = db.query(Paths).from_statement(text("SELECT u_paths.id, u_paths.name "
@@ -252,7 +241,6 @@ class ConfDbQueries(object):
     def getPathContact(self,id_pathid=-2, id_ver=-2,db=None, log = None):
 
         if (id_pathid == -2 or db == None or id_ver==-2):
-#            print ("PARAMETERS EXCEPTION HERE")
             log.error('ERROR: getPathName - input parameters error')
 
 #
@@ -263,7 +251,6 @@ class ConfDbQueries(object):
     def getPathDescription(self,id_pathid=-2, id_ver=-2,db=None, log = None):
 
         if (id_pathid == -2 or db == None or id_ver==-2):
-#            print ("PARAMETERS EXCEPTION HERE")
             log.error('ERROR: getPathName - input parameters error')
 
 #        description = db.query(PathToVarVal).from_statement(text("SELECT u_path2varval.id, u_path2varval.id_var, u_path2varval.id_val  " #, u_pathids.description "
@@ -308,11 +295,9 @@ class ConfDbQueries(object):
     def getTemplateFromPae(self,id_pae=-2, db=None, log = None):
 
         if (id_pae == -2 or db == None):
-#            print ("PARAMETERS EXCEPTION HERE")
             log.error('ERROR: getTemplateFromPae - input parameters error')
 
         template_id = db.query(ModToTemp).filter(ModToTemp.id_pae==id_pae).first()
-        print "TID:" ,template_id.id_templ
         template = db.query(ModTemplate).filter(ModTemplate.id==template_id.id_templ).first()
 
         return template
@@ -320,7 +305,6 @@ class ConfDbQueries(object):
     def getTemplateParams(self,id_templ=-2, db=None, log = None):
 
         if (id_templ == -2 or db == None):
-#            print ("PARAMETERS EXCEPTION HERE")
             log.error('ERROR: getTemplateParams - input parameters error')
 
         tempelements = db.query(ModTelement).filter(ModTelement.id_modtemp==id_templ).all()
@@ -330,7 +314,6 @@ class ConfDbQueries(object):
     def getModuleParamItems(self,id_pae=-2, db=None, log = None):
 
         if (id_pae == -2 or db == None):
-#            print ("PARAMETERS EXCEPTION HERE")
             log.error('ERROR: getModuleParamItems - input parameters error')
 
 #        q = db.query(Moduleitem).from_statement(text("SELECT DISTINCT u_pae2moe.id, u_pae2moe.id_pae, u_pae2moe.id_moe, u_pae2moe.lvl, u_pae2moe.ord "
@@ -345,7 +328,6 @@ class ConfDbQueries(object):
         + " FROM u_pae2moe WHERE u_pae2moe.id_pae =:id_pae GROUP BY u_pae2moe.id_moe, u_pae2moe.id_pae ORDER BY u_pae2moe.id_moe) myPae2Moe "
         + "ON u_pae2moe.id = myPae2Moe.maxid ORDER BY u_pae2moe.id_moe")).params(id_pae=id_pae)
 
-        print "QUERY: ", str(q)
         items = q.all()
 
 #        else:
@@ -358,10 +340,40 @@ class ConfDbQueries(object):
 
         return items
 
+
+    def getModuleParamItemsOne(self,id_pae=-2, db=None, log = None):
+
+        if (id_pae == -2 or db == None):
+            log.error('ERROR: getModuleParamItems - input parameters error')
+
+        query = db.query(ModuleitemFull).from_statement(text("""SELECT
+                u_pae2moe.id id,
+                u_pae2moe.id_pae id_pae,
+                u_pae2moe.id_moe id_moe,
+                u_pae2moe.lvl lvl,
+                u_pae2moe.ord ord,
+                u_moelements.moetype moetype,
+                u_moelements.paramtype paramtype,
+                u_moelements.tracked tracked,
+                u_moelements.name name,
+                u_moelements.value value,
+                u_moelements.valuelob valuelob
+            FROM
+                u_pae2moe,
+                u_moelements,
+                (SELECT MAX(u_pae2moe.id) id FROM u_pae2moe WHERE u_pae2moe.id_pae = :id_pae GROUP BY u_pae2moe.id_moe,u_pae2moe.id_pae) unique_id
+            WHERE
+                u_pae2moe.id = unique_id.id AND
+                u_moelements.id = u_pae2moe.id_moe
+            ORDER BY u_pae2moe.id_moe""")).params(id_pae=id_pae)
+
+        elements = query.all()
+        return elements
+
+
     def getModuleParamElements(self,moeIds=None, db=None, log = None):
 
         if (moeIds==None or db == None):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getModuleParamElements - input parameters error')
 
         elements = db.query(Modelement).filter(Modelement.id.in_(moeIds)).order_by(Modelement.id).all()
@@ -372,7 +384,6 @@ class ConfDbQueries(object):
     def getAllDirectories(self,db=None, log = None):
 
         if (db == None):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getAllDirectories - input parameters error')
 
         directories = db.query(Directory).all()
@@ -382,7 +393,6 @@ class ConfDbQueries(object):
     def getDirectoryByName(self,name="",db=None, log = None):
 
         if (db == None or name==""):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getDirectoryByName - input parameters error')
 
         directory = db.query(Directory).filter(Directory.name == name).first()
@@ -392,7 +402,6 @@ class ConfDbQueries(object):
     def getChildDirectories(self,dir_id=-2,db=None, log = None):
 
         if (db == None or dir_id==-2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getDirectoryByName - input parameters error')
 
         directories = db.query(Directory).filter(Directory.id_parentdir == dir_id).all()
@@ -402,7 +411,6 @@ class ConfDbQueries(object):
     def getConfigsInDir(self,id_parent=-2,db=None, log = None):
 
         if (db == None or id_parent == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getConfigsInDir - input parameters error')
 
         configs = db.query(Configuration).from_statement(text("SELECT  u_configurations.id, u_configurations.name FROM u_configurations, u_confversions WHERE u_configurations.id = u_confversions.id_config and u_confversions.id_parentdir=:id_par")).params(id_par=id_parent).all()
@@ -412,7 +420,6 @@ class ConfDbQueries(object):
     def getConfVersions(self,id_config=-2,db=None, log = None):
 
         if (db == None or id_config == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getConfVersions - input parameters error')
 
         versions = db.query(Version).filter(Version.id_config == id_config).all()
@@ -422,7 +429,6 @@ class ConfDbQueries(object):
     def getModToTempByPae(self,id_pae=-2,db=None, log = None):
 
         if (db == None or id_pae == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getModToTempByPae - input parameters error')
 
         mod2temp = db.query(ModToTemp).filter(ModToTemp.id_pae==id_pae).first()
@@ -432,7 +438,6 @@ class ConfDbQueries(object):
     def getMod2TempByPaelemets(self,id_paes=None,db=None, log = None):
 
         if (db == None or id_paes == None):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getMod2TempByPaelemets - input parameters error')
 
         mod2temps = db.query(ModToTemp).filter(ModToTemp.id_pae.in_(id_paes)).all()
@@ -442,7 +447,6 @@ class ConfDbQueries(object):
     def getMod2TempByVer(self,id_ver=None,db=None, log = None):
 
         if (db == None or id_ver == None):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getMod2TempByVer - input parameters error')
 
         mod2temps = db.query(ModToTemp).from_statement(text("SELECT UNIQUE u_mod2templ.id, u_mod2templ.id_pae, u_mod2templ.id_templ "
@@ -459,27 +463,26 @@ class ConfDbQueries(object):
     def getTempIdByPae(self,id_pae=-2,db=None, log = None):
 
         if (db == None or id_pae == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getTempIdByPae - input parameters error')
 
         mod2temps = db.query(ModToTemp.id_templ).filter(ModToTemp.id_pae==id_pae).first()
 
         return mod2temps[0]
 
+
     def getModTemplate(self,id_temp=-2,db=None, log = None):
 
         if (db == None or id_temp == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getModTemplate - input parameters error')
 
         modTemp = db.query(ModTemplate).filter(ModTemplate.id==id_temp).first()
 
         return modTemp
 
+
     def getPaelement(self,id_pae=-2,db=None, log = None):
 
         if (db == None or id_pae == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getPaelement - input parameters error')
 
         element = db.query(Pathelement).get(id_pae)
@@ -489,7 +492,6 @@ class ConfDbQueries(object):
     def getConfPaelements(self,id_ver=-2,db=None, log = None):
 
         if (db == None or id_ver == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getConfPaelements - input parameters error')
 
         elements = db.query(Pathelement).from_statement(text("SELECT UNIQUE u_paelements.id, u_paelements.name "
@@ -506,7 +508,6 @@ class ConfDbQueries(object):
     def getRelTemplates(self,id_rel=-2,db=None, log = None):
 
         if (db == None or id_rel == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getRelTemplates - input parameters error')
 
         templates = db.query(ModTemplate).from_statement(text("select u_moduletemplates.id, u_moduletemplates.name, "
@@ -520,7 +521,6 @@ class ConfDbQueries(object):
     def getAPathidByPae(self,id_rel=-2,db=None, log = None):
 
         if (db == None or id_rel == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getAPathidByPae - input parameters error')
 
         templates = db.query(ModTemplate).from_statement(text("select u_moduletemplates.id, u_moduletemplates.name, "
@@ -535,7 +535,6 @@ class ConfDbQueries(object):
     def getConfServices(self,id_ver=-2,db=None, log = None):
 
         if (db == None or id_ver == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getConfServices - input parameters error')
 
         elements = db.query(Service).from_statement(text("SELECT UNIQUE u_services.id, u_services.id_template, u_conf2srv.ord "
@@ -549,7 +548,6 @@ class ConfDbQueries(object):
     def getConfPrescale(self,id_ver=-2, id_templ=-2, db=None, log = None):
 
         if (db == None or id_ver == -2 or id_templ == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getConfPrescale - input parameters error')
 
         elements = db.query(Service).from_statement(text("SELECT UNIQUE u_services.id, u_services.id_template, u_conf2srv.ord "
@@ -563,7 +561,6 @@ class ConfDbQueries(object):
     def getConfPrescaleTemplate(self,id_rel=-2,db=None, log = None):
 
         if (db == None or id_rel == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getConfPrescaleTemplate - input parameters error')
 
         prescaleTemplate = db.query(SrvTemplate).from_statement(text("SELECT u_srvtemplates.id, u_srvtemplates.name "
@@ -577,7 +574,6 @@ class ConfDbQueries(object):
     def getRelSrvTemplates(self,id_rel=-2,db=None, log = None):
 
         if (db == None or id_rel == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getRelSrvTemplates - input parameters error')
 
         templates = db.query(SrvTemplate).from_statement(text("SELECT u_srvtemplates.id, u_srvtemplates.name "
@@ -591,7 +587,6 @@ class ConfDbQueries(object):
     def getSrvTemplateBySrv(self,sid=-2,db=None, log = None):
 
         if (db == None or sid == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getSrvTemplateBySrv - input parameters error')
 
         template = db.query(SrvTemplate).from_statement(text("SELECT u_srvtemplates.id, u_srvtemplates.name "
@@ -604,7 +599,6 @@ class ConfDbQueries(object):
     def getSrvTemplateParams(self,id_templ=-2, db=None, log = None):
 
         if (id_templ == -2 or db == None):
-#            print ("PARAMETERS EXCEPTION HERE")
             log.error('ERROR: getSrvTemplateParams - input parameters error')
 
         tempelements = db.query(SrvTempElement).filter(SrvTempElement.id_srvtemplate==id_templ).order_by(SrvTempElement.id).all()
@@ -614,7 +608,6 @@ class ConfDbQueries(object):
     def getServiceParamElements(self,srvId=None, db=None, log = None):
 
         if (srvId==None or db == None):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getServiceParamElements - input parameters error')
 
         elements = db.query(SrvElement).filter(SrvElement.id_service == srvId).order_by(SrvElement.id).all()
@@ -622,11 +615,9 @@ class ConfDbQueries(object):
         return elements
 
 
-
     def getConfStreams(self,ver=-2,db=None, log = None):
 
         if (db == None or ver == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getConfStreams - input parameters error')
 
 #        streams = db.query(StreamId).from_statement(text("SELECT DISTINCT u_streamids.id, u_streamids.id_stream "
@@ -656,7 +647,6 @@ class ConfDbQueries(object):
     def getConfDatasets(self,ver=-2,db=None, log = None):
 
         if (db == None or ver == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getConfDatasets - input parameters error')
 
 #        datasets = db.query(DatasetId).from_statement(text("SELECT DISTINCT u_datasetids.id, u_datasetids.id_dataset "
@@ -694,7 +684,6 @@ class ConfDbQueries(object):
 
     def getConfStrDatRels(self,ver=-2,db=None, log = None):
         if (db == None or ver == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getConfStrDatRels - input parameters error')
 
 #        rels = db.query(PathidToStrDst).from_statement(text("SELECT DISTINCT u_pathid2strdst.id, u_pathid2strdst.id_pathid, u_pathid2strdst.id_streamid, u_pathid2strdst.id_datasetid "
@@ -718,7 +707,6 @@ class ConfDbQueries(object):
     def getDatasetPathids(self,ver=-2, dstid =-2 ,db=None, log = None):
 
         if (db == None or ver == -2 or dstid == -2 ):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getDatasetPathids - input parameters error')
 
 #        pathids = db.query(Pathids).from_statement(text("SELECT distinct u_pathids.id "
@@ -746,14 +734,11 @@ class ConfDbQueries(object):
         return pathids
 
 
-
     def getConfEventContents(self,ver=-2,db=None, log = None):
 
         if (db == None or ver == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getConfEventContents - input parameters error')
 
-        print "VER: ",ver
 
         evcontents = db.query(EventContentId).from_statement(text("select U_EVENTCONTENTIDS.id , U_EVENTCONTENTIDS.id_evco "
                 + "from U_EVENTCONTENTIDS, U_CONF2EVCO "
@@ -766,7 +751,6 @@ class ConfDbQueries(object):
     def getEvCoToStream(self,ver=-2,db=None, log = None):
 
         if (db == None or ver == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getEvCoToStream - input parameters error')
 
         relEvCoToStr = db.query(EvCoToStream).from_statement(text("SELECT DISTINCT u_EVCO2STREAM.id, u_EVCO2STREAM.id_streamid, u_EVCO2STREAM.id_evcoid "
@@ -781,7 +765,6 @@ class ConfDbQueries(object):
     def getEvCoStatements(self,evc=-2,db=None, log = None):
 
         if (db == None or evc == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getPathItems - input parameters error')
 
         evcstats = db.query(EvCoStatement).from_statement(text("SELECT DISTINCT u_evcostatements.id, u_evcostatements.classn, u_evcostatements.modulel, u_evcostatements.extran, u_evcostatements.processn, u_evcostatements.statementtype "
@@ -794,7 +777,6 @@ class ConfDbQueries(object):
     def getEvCoToStat(self,evc=-2,db=None, log = None):
 
         if (db == None or evc == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getEvCoToStat - input parameters error')
 
         evcotostats = db.query(EvCoToStat).from_statement(text("SELECT DISTINCT u_evco2stat.id, u_evco2stat.id_stat ,u_evco2stat.statementrank "
@@ -807,7 +789,6 @@ class ConfDbQueries(object):
     def getESMTemplates(self,id_rel=-2,db=None, log = None):
 
         if (db == None or id_rel == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getESMTemplates - input parameters error')
 
         esModTemp = db.query(ESModTemplate).from_statement(text("select U_ESMTEMPLATES.id, U_ESMTEMPLATES.name "
@@ -820,7 +801,6 @@ class ConfDbQueries(object):
     def getConfESModules(self,id_ver=-2,db=None, log = None):
 
         if (db == None or id_ver == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getConfESModules - input parameters error')
 
         esmodules = db.query(ESModule).from_statement(text(" SELECT u_esmodules.id, u_esmodules.id_template, u_esmodules.name "
@@ -833,7 +813,6 @@ class ConfDbQueries(object):
     def getESMTemplateByEsm(self,id_esm=-2,db=None, log = None):
 
         if (db == None or id_esm == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getESMTemplateByEsm - input parameters error')
 
         esModTemp = db.query(ESModTemplate).from_statement(text("select U_ESMTEMPLATES.id, U_ESMTEMPLATES.name "
@@ -847,7 +826,6 @@ class ConfDbQueries(object):
     def getConfToESMRel(self,id_ver=-2,db=None, log = None):
 
         if (db == None or id_ver == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getConfToESMRel - input parameters error')
 
         esmodules = db.query(ConfToEsm).from_statement(text(" SELECT u_conf2esm.id, u_conf2esm.id_esmodule, u_conf2esm.ord "
@@ -859,7 +837,6 @@ class ConfDbQueries(object):
     def getESMTemplateParams(self,id_templ=-2, db=None, log = None):
 
         if (id_templ == -2 or db == None):
-#            print ("PARAMETERS EXCEPTION HERE")
             log.error('ERROR: getESMTemplateParams - input parameters error')
 
         esmtempelements = db.query(ESMTempElement).filter(ESMTempElement.id_esmtemplate==id_templ).order_by(ESMTempElement.id).all()
@@ -869,7 +846,6 @@ class ConfDbQueries(object):
     def getESModParams(self,id_esm=-2, db=None, log = None):
 
         if (id_esm == -2 or db == None):
-#            print ("PARAMETERS EXCEPTION HERE")
             log.error('ERROR: getESModParams - input parameters error')
 
         esmtempelements = db.query(ESMElement).filter(ESMElement.id_esmodule==id_esm).order_by(ESMElement.id).all()
@@ -881,7 +857,6 @@ class ConfDbQueries(object):
 
         elements = []
         if (id_version == -2 or db == None):
-#            print ("PARAMETERS EXCEPTION HERE")
             log.error('ERROR: getConfSequences - input parameters error')
 
         elements = db.query(Pathelement).from_statement(text("SELECT "
@@ -908,7 +883,6 @@ class ConfDbQueries(object):
 
         items = []
         if (id_version == -2 or db == None):
-#            print ("PARAMETERS EXCEPTION HERE")
             log.error('ERROR: getConfSequencesItems - input parameters error')
 
         items = db.query(Pathitems).from_statement(text("SELECT "
@@ -931,7 +905,6 @@ class ConfDbQueries(object):
     def getOUMElements(self,oumId=None, db=None, log = None):
 
         if (oumId==None or db == None):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getOUMElements - input parameters error')
 
         elements = db.query(OumElement).from_statement(text("select u_outmelements.* from "
@@ -946,7 +919,6 @@ class ConfDbQueries(object):
     def getConfGPsets(self,id_ver=-2,db=None, log = None):
 
         if (db == None or id_ver == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getConfGPsets - input parameters error')
 
         elements = db.query(Globalpset).from_statement(text("SELECT UNIQUE u_globalpsets.id, u_globalpsets.name, u_globalpsets.tracked, u_conf2gpset.ord "
@@ -959,7 +931,6 @@ class ConfDbQueries(object):
     def getGpsetElements(self,gpsId=None, db=None, log = None):
 
         if (gpsId==None or db == None):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getGpsetElements - input parameters error')
 
         elements = db.query(GpsetElement).filter(GpsetElement.id_gpset == gpsId).order_by(GpsetElement.id).all()
@@ -970,7 +941,6 @@ class ConfDbQueries(object):
     def getConfEDSource(self,id_ver=-2,db=None, log = None):
 
         if (db == None or id_ver == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getConfEDSource - input parameters error')
 
         eds = db.query(EDSource).from_statement(text(" SELECT u_edsources.id, u_edsources.id_template "
@@ -982,7 +952,6 @@ class ConfDbQueries(object):
     def getEDSTemplates(self,id_rel=-2,db=None, log = None):
 
         if (db == None or id_rel == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getEDSTemplates - input parameters error')
 
         edsTemp = db.query(EDSourceTemplate).from_statement(text("select u_edstemplates.id, u_edstemplates.name "
@@ -995,7 +964,6 @@ class ConfDbQueries(object):
     def getConfToEDSRel(self,id_ver=-2,db=None, log = None):
 
         if (db == None or id_ver == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getPathItems - input parameters error')
 
         esmodules = db.query(ConfToEds).from_statement(text(" SELECT u_conf2eds.id, u_conf2eds.id_edsource, u_conf2eds.ord "
@@ -1007,7 +975,6 @@ class ConfDbQueries(object):
     def getEDSTemplateByEds(self,id_eds=-2,db=None, log = None):
 
         if (db == None or id_eds == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getEDSTemplateByEds - input parameters error')
 
         edSrcTemp = db.query(EDSourceTemplate).from_statement(text("select u_edstemplates.id, u_edstemplates.name "
@@ -1020,7 +987,6 @@ class ConfDbQueries(object):
     def getEDSTemplateParams(self,id_templ=-2, db=None, log = None):
 
         if (id_templ == -2 or db == None):
-#            print ("PARAMETERS EXCEPTION HERE")
             log.error('ERROR: getEDSTemplateParams - input parameters error')
 
         edstempelements = db.query(EDSTempElement).filter(EDSTempElement.id_edstemplate==id_templ).order_by(EDSTempElement.id).all()
@@ -1029,7 +995,6 @@ class ConfDbQueries(object):
     def getEDSourceParams(self,id_eds=-2, db=None, log = None):
 
         if (id_eds == -2 or db == None):
-#            print ("PARAMETERS EXCEPTION HERE")
             log.error('ERROR: getEDSourceParams - input parameters error')
 
         edstempelements = db.query(EDSElement).filter(EDSElement.id_edsource==id_eds).order_by(EDSElement.id).all()
@@ -1039,7 +1004,6 @@ class ConfDbQueries(object):
     def getConfESSource(self,id_ver=-2,db=None, log = None):
 
         if (db == None or id_ver == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getConfESSource - input parameters error')
 
         ess = db.query(ESSource).from_statement(text(" SELECT u_essources.id, u_essources.id_template, u_essources.name "
@@ -1051,7 +1015,6 @@ class ConfDbQueries(object):
     def getESSTemplates(self,id_rel=-2,db=None, log = None):
 
         if (db == None or id_rel == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getESSTemplates - input parameters error')
 
         essTemp = db.query(ESSourceTemplate).from_statement(text("select u_esstemplates.id, u_esstemplates.name "
@@ -1064,7 +1027,6 @@ class ConfDbQueries(object):
     def getConfToESSRel(self,id_ver=-2,db=None, log = None):
 
         if (db == None or id_ver == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getConfToESSRel - input parameters error')
 
         essources = db.query(ConfToEss).from_statement(text(" SELECT u_conf2ess.id, u_conf2ess.id_essource, u_conf2ess.ord "
@@ -1076,7 +1038,6 @@ class ConfDbQueries(object):
     def getESSTemplateByEss(self,id_ess=-2,db=None, log = None):
 
         if (db == None or id_ess == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getESSTemplateByEss - input parameters error')
 
         esSrcTemp = db.query(ESSourceTemplate).from_statement(text("select u_esstemplates.id, u_esstemplates.name "
@@ -1089,7 +1050,6 @@ class ConfDbQueries(object):
     def getESSTemplateParams(self,id_templ=-2, db=None, log = None):
 
         if (id_templ == -2 or db == None):
-#            print ("PARAMETERS EXCEPTION HERE")
             log.error('ERROR: getESSTemplateParams - input parameters error')
 
         esstempelements = db.query(ESSTempElement).filter(ESSTempElement.id_esstemplate==id_templ).order_by(ESSTempElement.id).all()
@@ -1099,7 +1059,6 @@ class ConfDbQueries(object):
     def getESSourceParams(self,id_eds=-2, db=None, log = None):
 
         if (id_eds == -2 or db == None):
-#            print ("PARAMETERS EXCEPTION HERE")s
             log.error('ERROR: getESSourceParams - input parameters error')
 
         esstempelements = db.query(ESSElement).filter(ESSElement.id_essource==id_eds).order_by(ESSElement.id).all()
@@ -1108,7 +1067,6 @@ class ConfDbQueries(object):
 
     def getPrescaleTemplate(self,id_release=-2,db=None, log = None):
         if (db == None or id_release == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getSrvTemplateBySrv - input parameters error')
 
         prescaleTemplate = db.query(SrvTemplate).filter(SrvTemplate.name == 'PrescaleService' ).filter(Srvt2Rele.id_srvtemplate == SrvTemplate.id).filter(Srvt2Rele.id_release == id_release).first()
@@ -1117,7 +1075,6 @@ class ConfDbQueries(object):
 
     def getPrescale(self,id_ver=-2, id_preTemp = -2, db=None, log = None):
         if (db == None or id_ver == -2 or id_preTemp == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getPrescale - input parameters error')
 
         prescale = db.query(Service).filter(Service.id_template == id_preTemp ).filter(Conf2Srv.id_confver == id_ver).filter(Conf2Srv.id_service == Service.id).first()
@@ -1126,7 +1083,6 @@ class ConfDbQueries(object):
 
     def getPrescalelabels(self,id_prescale=-2,db=None, log = None):
         if (db == None or id_prescale == -2):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getPrescalelabels - input parameters error')
 
         prescaleLabels = db.query(SrvElement).filter(SrvElement.name == 'lvl1Labels').filter(SrvElement.id_service == id_prescale).first()
@@ -1136,7 +1092,6 @@ class ConfDbQueries(object):
     def getAllDatsPatsRels(self,ver=-2, idis = None ,db=None, log = None):
 
         if (db == None or ver == -2 or idis == None):
-#                print ("PARAMETERS EXCEPTION HERE")
                 log.error('ERROR: getAllDatsPatsRels - input parameters error')
 
         dprels = db.query(PathidToStrDst).filter(PathidToStrDst.id_datasetid.in_(idis)).all()
@@ -1182,6 +1137,7 @@ class ConfDbQueries(object):
 
         return l1s_temp_params
 
+
     def getPathidToOum(self, streams = None ,db=None, log = None):
 
         if (db == None or streams == None):
@@ -1190,6 +1146,7 @@ class ConfDbQueries(object):
         pidToum = db.query(PathidToOutM).filter(PathidToOutM.id_streamid.in_(streams)).all()
 
         return pidToum
+
 
     def getSmartPrescaleModule(self, ver_id = -1, id_rel = -1, paths=None, db=None, log = None):
 
@@ -1200,6 +1157,7 @@ class ConfDbQueries(object):
 
         return smMods
 
+
     def getSmartPrescaleExpressions(self, mods = None ,db=None, log = None):
         if (db == None or mods == None):
                 log.error('ERROR: getSmartPrescaleExpressions - input parameters error')
@@ -1207,6 +1165,7 @@ class ConfDbQueries(object):
         smExps = db.query(Moduleitem).filter(Moduleitem.id_pae.in_(mods)).filter(Moduleitem.id_moe == Modelement.id).filter(Modelement.name == 'triggerConditions').all()
 
         return smExps
+
 
     def getModules(self,id_ver=-2, db=None, log = None):
 
@@ -1219,16 +1178,6 @@ class ConfDbQueries(object):
 
         return elements
 
-    def getModuleElements(self,id_ver=-2, db=None, log = None):
-
-        if (id_ver == -2 or db == None):
-            log.error('ERROR: getModuleElements - input parameters error')
-
-        query = db.query(Moduleitem1).filter(Moduleitem1.id_pae == Pathitems.id_pae).filter(Pathitems.id_pathid == Pathidconf.id_pathid).filter(Pathidconf.id_confver == id_ver)
-
-        elements = query.all()
-
-        return elements
 
     def getModuleTemplateParameters(self, id_rel=-2, db=None, log = None):
 
@@ -1241,6 +1190,7 @@ class ConfDbQueries(object):
 
         return elements
 
+
     def getRelease(self, id_rel=-2, db=None, log = None):
 
         if (id_rel == -2 or db == None):
@@ -1252,15 +1202,12 @@ class ConfDbQueries(object):
 
         return elements
 
+
     def getConfigurationByName(self, name = "", db=None, log = None):
         if (db == None or name == ""):
                 log.error('ERROR: getConfigurationByName - input parameters error')
                 return None
 
-        #print "NAME IN QUERY "+name
-
         confVer = db.query(Version).filter(Version.name == name).first()
-
-        #print "RESULT VER: " + str(confVer)
 
         return confVer.id

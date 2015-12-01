@@ -1333,7 +1333,7 @@ class Root(object):
         resp.success = True
         resp.children = []
 
-        config_file_name = self.conv.createConfig(ver, cnf, db, online, self.log, self.configDumpCounter, current_dir)
+        config_file_name = self.conv.createConfig(ver, cnf, db, online, self.configDumpCounter, current_dir, use_cherrypy = True)
         config_path = '/confdb/download/?filepath=' + str(config_file_name)
         url = UrlString(1,config_path)
         resp.children.append(url)

@@ -15,46 +15,39 @@ from marshmallow import Schema, fields, pprint
 from marshmallow.ordereddict import OrderedDict
 from exposed.exposed import *
 from utils import *
-import string
-import re
-from multiprocessing import Process, Pipe
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
 
 class DataBuilder(object):
 
     queries = ConfDbQueries()
     params_builder = ParamsBuilder()
 
-    global_datasets = None
-    global_paths = None
-    global_endPaths = None
-    global_paths_str = None
-    global_endpaths_str = None
+    def __init__(self, database, version, logger):
+        self.database = database
+        self.version  = version
+        self.logger   = logger
 
-    def getGlobalPsets(self, ver_id, db, log):
-        queries = self.queries
+    def getGlobalPsets(self):
         result = ""
 
-        global_psets = None
+        psets = None
 
         try:
-            global_psets = queries.getConfGPsets(ver_id, db, log)
+            psets = self.queries.getConfGPsets(self.version.id, self.database, self.logger)
         except Exception as e:
             msg = 'ERROR: Query getConfGPsets Error: ' + e.args[0]
-            log.error(msg)
+            self.logger.error(msg)
             return result
 
         template_params = None
 
-        for gpset in global_psets:
+        for gpset in psets:
             result = result + "process." + gpset.name + ' = cms.PSet(\n'
 
             try:
-                template_params = self.params_builder.gpsetParamsBuilder(gpset.id, queries, db,log)
+                template_params = self.params_builder.gpsetParamsBuilder(gpset.id, self.queries, self.database, self.logger)
             except Exception as e:
                 msg = 'ERROR: Query gpsetParamsBuilder Error: ' + e.args[0]
-                log.error(msg)
+                self.logger.error(msg)
                 return result
 
             new_result = self.createParameterString(template_params)
@@ -68,33 +61,32 @@ class DataBuilder(object):
         else:
             return result + "\n"
 
-    def getStreams(self, ver_id, db):
+    def getStreams(self):
 
         result = ""
-        global global_datasets
 
         streams = None
-        global_datasets = None
+        datasets = None
         relations = None
 
         try:
-            streams = self.queries.getConfStreams(ver_id,db)
-            global_datasets = self.queries.getConfDatasets(ver_id,db)
-            relations = self.queries.getConfStrDatRels(ver_id,db)
+            streams   = self.queries.getConfStreams(self.version.id, self.database)
+            datasets  = self.queries.getConfDatasets(self.version.id, self.database)
+            relations = self.queries.getConfStrDatRels(self.version.id, self.database)
         except Exception as e:
             msg = 'ERROR: Steams Query Error: ' + e.args[0]
-            log.error(msg)
+            self.logger.error(msg)
             return result
 
         relations_dict = dict((x.id_datasetid, x.id_streamid) for x in relations)
 
         streams.sort(key=lambda par: par.name)
-        global_datasets.sort(key=lambda par: par.name)
+        datasets.sort(key=lambda par: par.name)
 
         for stream in streams:
             result = result + self.getTab(2) + stream.name + " = cms.vstring( "
             new_result = ""
-            for dataset in global_datasets:
+            for dataset in datasets:
                 if(stream.id == relations_dict.get(dataset.id)):
                     new_result = new_result + "'" + dataset.name + "'" + ",\n" + self.getTab(4)
 
@@ -107,20 +99,27 @@ class DataBuilder(object):
 
         return result + "\n"
 
-    def getDatasetsPaths(self, ver_id, db):
+    def getDatasetsPaths(self):
 
         result = ""
 
-        paths = None
+        try:
+            datasets = self.queries.getConfDatasets(self.version.id, self.database)
+            datasets.sort(key=lambda par: par.name)
+        except Exception as e:
+            msg = 'ERROR: Steams Query Error: ' + e.args[0]
+            self.logger.error(msg)
+            return result
 
-        for dataset in global_datasets:
+        for dataset in datasets:
             result = result + self.getTab(2) + dataset.name + " = cms.vstring( "
 
+            paths = None
             try:
-                paths = self.queries.getDatasetPathids(ver_id, dataset.id, db)
+                paths = self.queries.getDatasetPathids(self.version.id, dataset.id, self.database)
             except Exception as e:
                 msg = 'ERROR: Query getDatasetPathids Error: ' + e.args[0]
-                log.error(msg)
+                self.logger.error(msg)
                 return result
 
             paths.sort(key=lambda par: par.name)
@@ -139,22 +138,21 @@ class DataBuilder(object):
 
         return result + "\n"
 
-    def getEDSources(self, ver_id, id_rel, db = None):
+    def getEDSources(self):
 
         result = ""
-        queries = self.queries
 
         modules = None
         templates = None
         conf2eds = None
 
         try:
-            modules = queries.getConfEDSource(ver_id,db)
-            templates = queries.getEDSTemplates(id_rel,db)
-            conf2eds = queries.getConfToEDSRel(ver_id,db)
+            modules   = self.queries.getConfEDSource(self.version.id, self.database)
+            templates = self.queries.getEDSTemplates(self.version.id_release, self.database)
+            conf2eds  = self.queries.getConfToEDSRel(self.version.id, self.database)
         except Exception as e:
             msg = 'ERROR: EDSources Query Error: ' + e.args[0]
-            log.error(msg)
+            self.logger.error(msg)
             return result
 
         templates_dict = dict((x.id, x) for x in templates)
@@ -180,11 +178,11 @@ class DataBuilder(object):
             result = result + 'process.source = cms.Source( "'  + edsource.name + '",\n'
 
             try:
-                template = queries.getEDSTemplateByEds(edsource.id,db)
-                tempelements = queries.getEDSTemplateParams(template.id,db)
+                template     = self.queries.getEDSTemplateByEds(edsource.id, self.database)
+                tempelements = self.queries.getEDSTemplateParams(template.id, self.database)
             except Exception as e:
                 msg = 'ERROR: EDSources Query Error: ' + e.args[0]
-                log.error(msg)
+                self.logger.error(msg)
                 return ""
             for tempel in tempelements:
                 tracked, val = self.buildParamValue(tempel, 4, 6)
@@ -193,9 +191,8 @@ class DataBuilder(object):
 
         return result
 
-    def getESSource(self, ver_id, id_rel, db = None, log=None):
+    def getESSource(self):
 
-        queries = self.queries
         result = ""
 
         modules = None
@@ -203,12 +200,12 @@ class DataBuilder(object):
         conf2ess = None
 
         try:
-            modules = queries.getConfESSource(ver_id,db)
-            templates = queries.getESSTemplates(id_rel,db)
-            conf2ess = queries.getConfToESSRel(ver_id,db)
+            modules =   self.queries.getConfESSource(self.version.id, self.database)
+            templates = self.queries.getESSTemplates(self.version.id_release, self.database)
+            conf2ess =  self.queries.getConfToESSRel(self.version.id, self.database)
         except Exception as e:
             msg = 'ERROR: ESSource Query Error: ' + e.args[0]
-            log.error(msg)
+            self.logger.error(msg)
             return result
 
         templates_dict = dict((x.id, x) for x in templates)
@@ -219,7 +216,7 @@ class DataBuilder(object):
             if (templates_dict.has_key(module.id_template) and conf2ess_dict.has_key(module.id)):
                 template = templates_dict.get(module.id_template)
                 result = result + "process." + module.name + ' = cms.ESSource( "' + template.name + '",\n'
-                template_params = self.params_builder.esSourceParamsBuilder(module.id, self.queries, db, log)
+                template_params = self.params_builder.esSourceParamsBuilder(module.id, self.queries, self.database, self.logger)
                 new_result = self.createParameterString(template_params)
                 if new_result == "":
                     result = result[:-2] + " )\n"
@@ -228,9 +225,8 @@ class DataBuilder(object):
 
         return result + "\n"
 
-    def getESModules(self, ver_id, id_rel, db = None, log=None):
+    def getESModules(self):
 
-        queries = self.queries
         result = ""
 
         modules = None
@@ -238,12 +234,12 @@ class DataBuilder(object):
         conf2esm = None
 
         try:
-            modules = queries.getConfESModules(ver_id,db)
-            templates = queries.getESMTemplates(id_rel,db)
-            conf2esm = queries.getConfToESMRel(ver_id,db)
+            modules   = self.queries.getConfESModules(self.version.id, self.database)
+            templates = self.queries.getESMTemplates(self.version.id_release, self.database)
+            conf2esm  = self.queries.getConfToESMRel(self.version.id, self.database)
         except Exception as e:
             msg = 'ERROR: ESModules Query Error: ' + e.args[0]
-            log.error(msg)
+            self.logger.error(msg)
             return result
 
         templates_dict = dict((x.id, x) for x in templates)
@@ -254,7 +250,7 @@ class DataBuilder(object):
             if (templates_dict.has_key(module.id_template) and conf2esm_dict.has_key(module.id)):
                 template = templates_dict.get(module.id_template)
                 result = result + "process." + module.name + ' = cms.ESProducer( "' + template.name + '",\n'
-                template_params = self.params_builder.esModuleParamsBuilder(module.id, self.queries, db, log)
+                template_params = self.params_builder.esModuleParamsBuilder(module.id, self.queries, self.database, self.logger)
                 new_result = self.createParameterString(template_params)
                 if new_result == "":
                     result = result[:-2] + " )\n"
@@ -263,20 +259,19 @@ class DataBuilder(object):
 
         return result + "\n"
 
-    def getServices(self, ver_id, id_rel, db = None, log=None):
+    def getServices(self):
 
-        queries = self.queries
         result = ""
 
         services = None
         templates = None
 
         try:
-            services = queries.getConfServices(ver_id,db)
-            templates = queries.getRelSrvTemplates(id_rel,db)
+            services  = self.queries.getConfServices(self.version.id, self.database)
+            templates = self.queries.getRelSrvTemplates(self.version.id_release, self.database)
         except Exception as e:
             msg = 'ERROR: Services Query Error: ' + e.args[0]
-            log.error(msg)
+            self.logger.error(msg)
             return result
 
         templates_dict = dict((x.id, x) for x in templates)
@@ -285,7 +280,7 @@ class DataBuilder(object):
             if (templates_dict.has_key(service.id_template)):
                 template = templates_dict.get(service.id_template)
                 result = result + "process." + template.name + ' = cms.Service( "' + template.name + '",\n'
-                template_params = self.params_builder.serviceParamsBuilder(service.id, self.queries, db, log)
+                template_params = self.params_builder.serviceParamsBuilder(service.id, self.queries, self.database, self.logger)
                 new_result = self.createParameterString(template_params)
                 if new_result == "":
                     result = result[:-2] + " )\n"
@@ -294,90 +289,82 @@ class DataBuilder(object):
 
         return result + "\n"
 
-    def getModules(self, ver_id = -2, id_rel = -2, db = None):
 
-        import cherrypy
-        log = cherrypy.log
-
-        queries = self.queries
+    def getModules(self):
         result = ""
 
-        modules = None
-        module_parameters = None
-        module_template = None
+        modules = []
+        templates = {}
+        params = {}
 
         try:
-            modules = self.queries.getModules(ver_id, db, log)
-            module_parameters = self.queries.getModuleElements(ver_id, db, log)
-            module_template = self.queries.getModuleTemplateParameters(id_rel, db, log)
+#            self.logger.info('getModules: running getModules query')
+            self.logger.error('getModules: running getModules query')
+            modules = self.queries.getModules(self.version.id, self.database, self.logger)
+
+#            self.logger.info('getModules: running getTemplateParams queries')
+            self.logger.error('getModules: running getTemplateParams queries')
+            templates = dict((module.id_templ, None) for module in modules) #{ module.id_templ: None for module in modules } py 2.7 only
+            for id in templates:
+                templates[id] = self.queries.getTemplateParams(id, self.database, self.logger)
+
+            self.logger.error('getModules: running getModuleParamItemsOne queries')
+#            self.logger.info('getModules: running getModuleParamItemsOne queries')
+            params = dict((module.id, None) for module in modules) #{ module.id: None for module in modules }
+            for id in params:
+                params[id] = self.queries.getModuleParamItemsOne(id, self.database, self.logger)
+
+            self.logger.error('getModules: all queries done')
+#            self.logger.info('getModules: all queries done')
+
         except Exception as e:
-            msg = 'ERROR: Modules Query Error: ' + e.args[0]
-            log.error(msg)
-            return result
+            msg = 'ERROR: getModules: ' + e.args[0]
+            self.logger.error(msg)
+            return ""
 
-        module_para_dict = dict()
-        module_temp_dict = dict()
-
-        for param in module_parameters:
-            if param.id_pae not in module_para_dict:
-                module_para_dict[param.id_pae] = []
-                module_para_dict[param.id_pae].append(param)
-            else:
-                module_para_dict[param.id_pae].append(param)
-
-        for template in module_template:
-            if template.id_modtemp not in module_temp_dict:
-                module_temp_dict[template.id_modtemp] = []
-                module_temp_dict[template.id_modtemp].append(template)
-            else:
-                module_temp_dict[template.id_modtemp].append(template)
-
-        modules.sort(key=lambda par: par.name)
-
+#        self.logger.info('getModules: building modules configuration')
+        self.logger.error('getModules: building modules configuration')
         for module in modules:
             result = result + "process." + module.name + " = cms." + module.mtype + '( "' + module.temp_name + '",\n'
-            template = module_temp_dict.get(module.id_templ)
-            parameters = module_para_dict.get(module.id)
-            if parameters is not None:
-                parameters.sort(key=lambda par: par.id_moe)
+            template = templates.get(module.id_templ)
             if template is not None:
                 template.sort(key=lambda par: par.id)
-            template_params = self.moduleParamsBuilder(template, parameters, log)
+            parameters = params.get(module.id)
+            if parameters is not None:
+                parameters.sort(key=lambda par: par.id_moe)
+            template_params = self.moduleParamsBuilder(template, parameters)
 
             new_result = self.createParameterString(template_params)
-
             if new_result == "":
                 result = result[:-2] + " )\n"
             else:
                 result = result + new_result
 
+        self.logger.error('getModules: done')
+#        self.logger.info('getModules: done')
         return result + "\n"
 
-    def getOutputModules(self, ver_id, id_rel, db = None, log=None):
 
-        queries = self.queries
-        global global_endPaths, global_endpaths_str
+    def getOutputModules(self):
 
         result = ""
-        global_endpaths_str = ""
 
-        global_endPaths = None
+        endPaths = None
 
         try:
-            global_endPaths = queries.getEndPaths(ver_id,db, log)
+            endPaths = self.queries.getEndPaths(self.version.id, self.database, self.logger)
         except Exception as e:
             msg = 'ERROR: Query getEndPaths Error: ' + e.args[0]
-            log.error(msg)
+            self.logger.error(msg)
             return result
 
-        for path in global_endPaths:
-            global_endpaths_str = global_endpaths_str + "process." + path.name + ", "
-            outmodule = queries.getOumStreamid(path.id, db, log)
+        for path in endPaths:
+            outmodule = self.queries.getOumStreamid(path.id, self.database, self.logger)
             if outmodule == None:
                 continue
-            stream = queries.getStreamid(outmodule.id_streamid, db, log)
+            stream = self.queries.getStreamid(outmodule.id_streamid, self.database, self.logger)
             result = result + "process.hltOutput"+ stream.name + ' = cms.OutputModule( "ShmStreamConsumer",\n'
-            template_params = self.params_builder.outputModuleParamsBuilder(stream.id,queries,db,log)
+            template_params = self.params_builder.outputModuleParamsBuilder(stream.id, self.queries, self.database, self.logger)
             new_result = self.createParameterString(template_params)
             if new_result == "":
                 result = result[:-2] + " )\n"
@@ -386,27 +373,23 @@ class DataBuilder(object):
 
         return result + "\n"
 
-    def getSequences(self, ver_id, id_rel, db = None, log=None):
 
-        queries = self.queries
+    def getSequences(self):
+
         result = ""
 
         seqsMap = SequencesDict()
         idgen = Counter()
         modsMap = ModulesDict()
 
-        global global_paths, global_paths_str
-
-        global_paths = None
+        paths = None
 
         try:
-            global_paths = queries.getPaths(ver_id, db, log)
+            paths = self.queries.getPaths(self.version.id, self.database, self.logger)
         except Exception as e:
             msg = 'ERROR: Query getPaths Error: ' + e.args[0]
-            log.error(msg)
+            self.logger.error(msg)
             return result
-
-        global_paths_str = ""
 
         children = []
         written_sequences = []
@@ -414,15 +397,13 @@ class DataBuilder(object):
         elements = None
         seq_items = None
 
-        for path in global_paths:
-            global_paths_str = global_paths_str + "process." + path.name + ", "
-
+        for path in paths:
             try:
-                elements = queries.getCompletePathSequences(path.id, ver_id, db, log)
-                seq_items = queries.getCompletePathSequencesItems(path.id, ver_id, db, log)
+                elements  = self.queries.getCompletePathSequences(path.id, self.version.id, self.database, self.logger)
+                seq_items = self.queries.getCompletePathSequencesItems(path.id, self.version.id, self.database, self.logger)
             except Exception as e:
                 msg = 'ERROR: Sequences Query Error: ' + e.args[0]
-                log.error(msg)
+                self.logger.error(msg)
                 return result
 
             seq_elems_dict = dict((x.id, x) for x in elements)
@@ -443,8 +424,7 @@ class DataBuilder(object):
 
         return result + "\n"
 
-    def getPaths(self, ver_id, id_rel, db = None, log=None):
-        queries = self.queries
+    def getPaths(self):
         modsMap = ModulesDict()
         seqsMap = SequencesDict()
         idgen = Counter()
@@ -455,15 +435,22 @@ class DataBuilder(object):
         lista = None
         lvlzelems = None
 
-        for path in global_paths:
+        try:
+            paths = self.queries.getPaths(self.version.id, self.database, self.logger)
+        except Exception as e:
+            msg = 'ERROR: Query getPaths Error: ' + e.args[0]
+            self.logger.error(msg)
+            return result
+
+        for path in paths:
             result = result + "process." + path.name + " = " + "cms.Path( "
 
             try:
-                elements = queries.getCompletePathSequences(path.id, ver_id, db, log)
-                items = queries.getCompletePathSequencesItems(path.id, ver_id, db, log)
+                elements = self.queries.getCompletePathSequences(path.id, self.version.id, self.database, self.logger)
+                items    = self.queries.getCompletePathSequencesItems(path.id, self.version.id, self.database, self.logger)
             except Exception as e:
                 msg = 'ERROR: Paths Query Error: ' + e.args[0]
-                log.error(msg)
+                self.logger.error(msg)
                 return result
 
             elements_dict = dict((x.id, x) for x in elements)
@@ -476,19 +463,19 @@ class DataBuilder(object):
                 item = Pathitem(p.id_pae, elem.name, p.id_pathid, elem.paetype, p.id_parent, p.lvl, p.order, p.operator)
 
                 if (item.paetype == 2):
-                    item.gid = seqsMap.put(idgen,elem,p.id_pathid,p.order,p.lvl)
+                    item.gid = seqsMap.put(idgen, elem, p.id_pathid, p.order, p.lvl)
                     seq[item.gid]=item
                     if (item.lvl == 0):
                         iid = item.id
                         lvlZeroSeq_Dict[item.gid] = iid
 
             try:
-                lista = queries.getLevelZeroPathItems(path.id, ver_id, db, log)
-                lvlzelems = queries.getLevelZeroPaelements(path.id, ver_id, db, log)
+                lista     = self.queries.getLevelZeroPathItems(path.id, self.version.id, self.database, self.logger)
+                lvlzelems = self.queries.getLevelZeroPaelements(path.id, self.version.id, self.database, self.logger)
 
             except Exception as e:
                 msg = 'ERROR: Paths Query Error: ' + e.args[0]
-                log.error(msg)
+                self.logger.error(msg)
                 return result
 
             lvlzelems_dict = dict((x.id, x) for x in lvlzelems)
@@ -496,9 +483,9 @@ class DataBuilder(object):
 
             for l in lista:
                 elem = lvlzelems_dict[l.id_pae]
-                item = Pathitem(l.id_pae ,elem.name, l.id_pathid, elem.paetype, l.id_parent, l.lvl, l.order, l.operator)
-                item.gid = modsMap.putItem(idgen,elem,l.id_pathid,l.order,l.lvl)
-                pats.insert(item.order,item)
+                item = Pathitem(l.id_pae , elem.name, l.id_pathid, elem.paetype, l.id_parent, l.lvl, l.order, l.operator)
+                item.gid = modsMap.putItem(idgen, elem, l.id_pathid, l.order, l.lvl)
+                pats.insert(item.order, item)
 
             lvlZeroSeq_Dict_keys = lvlZeroSeq_Dict.keys()
             for lzseq in lvlZeroSeq_Dict_keys:
@@ -517,9 +504,8 @@ class DataBuilder(object):
 
         return result + "\n"
 
-    def getEndPaths(self, ver_id, id_rel, db = None, log=None):
 
-        queries = self.queries
+    def getEndPaths(self):
         modsMap = ModulesDict()
         seqsMap = SequencesDict()
         oumodsMap = OutputModulesDict()
@@ -531,15 +517,22 @@ class DataBuilder(object):
         lista = None
         lvlzelems = None
 
-        for path in global_endPaths:
+        try:
+            endPaths = self.queries.getEndPaths(self.version.id, self.database, self.logger)
+        except Exception as e:
+            msg = 'ERROR: Query getEndPaths Error: ' + e.args[0]
+            self.logger.error(msg)
+            return result
+
+        for path in endPaths:
             result = result + "process." + path.name + " = " + "cms.EndPath( "
 
             try:
-                elements = queries.getCompletePathSequences(path.id, ver_id, db, log)
-                items = queries.getCompletePathSequencesItems(path.id, ver_id, db, log)
+                elements = self.queries.getCompletePathSequences(path.id, self.version.id, self.database, self.logger)
+                items    = self.queries.getCompletePathSequencesItems(path.id, self.version.id, self.database, self.logger)
             except Exception as e:
                 msg = 'ERROR: Paths Query Error: ' + e.args[0]
-                log.error(msg)
+                self.logger.error(msg)
                 return result
 
             elements_dict = dict((x.id, x) for x in elements)
@@ -552,19 +545,19 @@ class DataBuilder(object):
                 item = Pathitem(p.id_pae, elem.name, p.id_pathid, elem.paetype, p.id_parent, p.lvl, p.order)
 
                 if (item.paetype == 2):
-                    item.gid = seqsMap.put(idgen,elem,p.id_pathid,p.order,p.lvl)
+                    item.gid = seqsMap.put(idgen, elem, p.id_pathid, p.order, p.lvl)
                     seq[item.gid]=item
                     if (item.lvl == 0):
                         iid = item.id
                         lvlZeroSeq_Dict[item.gid] = iid
 
             try:
-                lista = queries.getLevelZeroPathItems(path.id, ver_id, db, log)
-                lvlzelems = queries.getLevelZeroPaelements(path.id, ver_id, db, log)
+                lista     = self.queries.getLevelZeroPathItems(path.id, self.version.id, self.database, self.logger)
+                lvlzelems = self.queries.getLevelZeroPaelements(path.id, self.version.id, self.database, self.logger)
 
             except Exception as e:
                 msg = 'ERROR: Paths Query Error: ' + e.args[0]
-                log.error(msg)
+                self.logger.error(msg)
                 return result
 
             lvlzelems_dict = dict((x.id, x) for x in lvlzelems)
@@ -572,23 +565,23 @@ class DataBuilder(object):
 
             for l in lista:
                 elem = lvlzelems_dict[l.id_pae]
-                item = Pathitem(l.id_pae ,elem.name, l.id_pathid, elem.paetype, l.id_parent, l.lvl, l.order, l.operator)
-                item.gid = modsMap.putItem(idgen,elem,l.id_pathid,l.order,l.lvl)
-                pats.insert(item.order,item)
+                item = Pathitem(l.id_pae , elem.name, l.id_pathid, elem.paetype, l.id_parent, l.lvl, l.order, l.operator)
+                item.gid = modsMap.putItem(idgen, elem, l.id_pathid, l.order, l.lvl)
+                pats.insert(item.order, item)
 
             lvlZeroSeq_Dict_keys = lvlZeroSeq_Dict.keys()
             for lzseq in lvlZeroSeq_Dict_keys:
                 lzsequence = seq[lzseq]
                 pats.insert(lzsequence.order, lzsequence)
 
-            outmodule = queries.getOumStreamid(path.id, db, log)
+            outmodule = self.queries.getOumStreamid(path.id, self.database, self.logger)
             if (outmodule != None):
-                stream = queries.getStreamid(outmodule.id_streamid, db, log)
+                stream = self.queries.getStreamid(outmodule.id_streamid, self.database, self.logger)
 
                 oumName = "hltOutput"+stream.name
                 oum = Pathitem(outmodule.id_streamid, oumName, outmodule.id_pathid, 3, -1, 0, outmodule.order)
 
-                oum.gid = oumodsMap.put(idgen,oum)
+                oum.gid = oumodsMap.put(idgen, oum)
 
                 pats.insert(oum.order, oum)
 
@@ -606,16 +599,30 @@ class DataBuilder(object):
 
     def getSchedule(self):
 
-        if global_paths_str + global_endpaths_str == "":
+        text = ''
+        try:
+            paths    = self.queries.getPaths(self.version.id, self.database, self.logger)
+            endPaths = self.queries.getEndPaths(self.version.id, self.database, self.logger)
+        except Exception as e:
+            msg = 'ERROR: getSchedule: error querying database: ' + e.args[0]
+            self.logger.error(msg)
+            return "process.HLTSchedule = cms.Schedule( )"
+
+        for path in paths:
+            text = text + "process." + path.name + ", "
+        for path in endPaths:
+            text = text + "process." + path.name + ", "
+
+        if text == "":
             return "process.HLTSchedule = cms.Schedule( )"
 
         else:
-            result = "process.HLTSchedule = cms.Schedule( *(" + global_paths_str + global_endpaths_str
+            result = "process.HLTSchedule = cms.Schedule( *(" + text
             return result[:-2] + " ))"
 
     ## -- Helper Functions -- ##
 
-    def moduleParamsBuilder(self, template, parameters, log):
+    def moduleParamsBuilder(self, template, parameters):
         params = []
 
         if template == None:
@@ -639,7 +646,6 @@ class DataBuilder(object):
             parValue = None
             if (p.valuelob == None or p.valuelob == "") and (p.moetype == 1):
                 parValue = p.value
-
             else:
                 parValue = p.valuelob
 
@@ -665,7 +671,7 @@ class DataBuilder(object):
             # It is a param
             else:
                 if(item.lvl == 0):
-                    temp_params.insert(item.order,item)
+                    temp_params.insert(item.order, item)
                     temp_params.sort(key=lambda par: par.order)
                 else:
                     tps = temp_pset[item.id_parent].children
@@ -722,7 +728,6 @@ class DataBuilder(object):
                 parValue = None
                 if (param.valuelob == None or param.valuelob == "") and (param.moetype == 1):
                     parValue = param.value
-
                 else:
                     parValue = param.valuelob
 
@@ -753,7 +758,7 @@ class DataBuilder(object):
                 # It is a param
                 else:
                     if(item.lvl == 0):
-                        params.insert(item.order,item)
+                        params.insert(item.order, item)
                         params.sort(key=lambda par: par.order)
                     else:
                         tps = pset[item.id_parent].children
@@ -773,14 +778,14 @@ class DataBuilder(object):
                 if (n.lvl != 0):
                     if (n.id_parent in temp_vpset.keys()):
                         if(vpset_name_dict.has_key(temp_vpset.get(n.id_parent).name)):
-                            vpset_name_dict.get(temp_vpset.get(n.id_parent).name).children.insert(n.order,n)
+                            vpset_name_dict.get(temp_vpset.get(n.id_parent).name).children.insert(n.order, n)
 
                     elif (n.id_parent in temp_pset.keys()):
                         if(pset_name_dict.has_key(temp_pset.get(n.id_parent).name)):
-                            pset_name_dict.get(temp_pset.get(n.id_parent).name).children.insert(n.order,n)
+                            pset_name_dict.get(temp_pset.get(n.id_parent).name).children.insert(n.order, n)
 
                     else:
-                        log.error('ERROR: Module Param Error Key')
+                        self.logger.error('ERROR: Module Parameter Error Key')
 
         #complete Pset construction
         psets = pset.values()
@@ -873,7 +878,7 @@ class DataBuilder(object):
                 else:
                     result = result +"VPSet(  *(\n" + new_result + self.getTab(pset_tab) + ") ),\n"
             else:
-                new_result = self.buildPsetChildren(pset,pset_tab+2,param_tab+2)
+                new_result = self.buildPsetChildren(pset, pset_tab+2, param_tab+2)
                 if len(pset.children) < 255:
                     pset_name = "cms.PSet(\n" if (pset.name == None) else pset.name + " = cms.PSet(\n"
                     result = result + self.getTab(pset_tab) + pset_name
@@ -1061,11 +1066,13 @@ class DataBuilder(object):
 
         return result, counter, children, written_sequences
 
-    def getRequestedVersion(self, ver=-2, cnf=-2, db = None):
+
+    @staticmethod
+    def getRequestedVersion(ver, cnf, db):
 
         ver_id = -1
         version = None
-        queries = self.queries
+        queries = DataBuilder.queries
 
         if((ver == -2) and (cnf == -2)):
             print "VER CNF ERROR"
@@ -1074,11 +1081,11 @@ class DataBuilder(object):
             configs = queries.getConfVersions(cnf, db)
             configs.sort(key=lambda par: par.version, reverse=True)
             ver_id = configs[0].id
-            version = queries.getVersion(ver_id,db)
+            version = queries.getVersion(ver_id, db)
 
         elif(ver != -2):
             ver_id = ver
-            version = queries.getVersion(ver,db)
+            version = queries.getVersion(ver, db)
 
         return version
 
